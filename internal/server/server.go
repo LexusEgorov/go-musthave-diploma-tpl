@@ -8,9 +8,12 @@ import (
 
 	"github.com/go-chi/chi"
 
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/balance"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/config"
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/order"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/server/handlers"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/server/middleware"
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/user"
 )
 
 type server struct {
@@ -38,7 +41,16 @@ func (s server) Stop() {
 }
 
 func NewServer(config config.Server, router *chi.Mux) *server {
-	handlers := handlers.NewHandlers()
+	userRepo := user.NewUserRepo(config.DB)
+	user := user.NewUser(userRepo)
+
+	balanceRepo := balance.NewBalanceRepo(config.DB)
+	balance := balance.NewBalance(balanceRepo)
+
+	orderRepo := order.NewOrderRepo(config.DB)
+	order := order.NewOrder(orderRepo)
+
+	handlers := handlers.NewHandlers(user, balance, order)
 
 	s := &server{
 		host:   config.Host,
