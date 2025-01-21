@@ -22,7 +22,7 @@ type server struct {
 	httpServer *http.Server
 }
 
-func (s server) Serve() error {
+func (s *server) Serve() error {
 	s.httpServer = &http.Server{
 		Addr:    s.host,
 		Handler: s.router,
@@ -31,7 +31,7 @@ func (s server) Serve() error {
 	return s.httpServer.ListenAndServe()
 }
 
-func (s server) Stop() {
+func (s *server) Stop() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
