@@ -1,8 +1,15 @@
 package order
 
-import "github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
+import (
+	"github.com/Masterminds/squirrel"
+
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/db"
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
+)
 
 type orderRepo struct {
+	db   db.DB
+	psql squirrel.StatementBuilderType
 }
 
 // Add implements OrderRepository.
@@ -15,6 +22,9 @@ func (o orderRepo) Get(uId int) []models.Order {
 	panic("unimplemented")
 }
 
-func NewOrderRepo(connection string) orderRepository {
-	return orderRepo{}
+func NewOrderRepo(db db.DB) orderRepository {
+	return orderRepo{
+		db:   db,
+		psql: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
+	}
 }

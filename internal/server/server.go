@@ -10,6 +10,7 @@ import (
 
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/balance"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/config"
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/db"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/order"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/server/handlers"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/server/middleware"
@@ -41,13 +42,16 @@ func (s *server) Stop() {
 }
 
 func NewServer(config config.Server, router *chi.Mux) *server {
-	userRepo := user.NewUserRepo(config.DB)
+	//TODO: CONFIG(isTablesCreated default false)
+	dbProvider := db.NewDB(config.DB, false)
+
+	userRepo := user.NewUserRepo(*dbProvider)
 	user := user.NewUser(userRepo)
 
-	balanceRepo := balance.NewBalanceRepo(config.DB)
+	balanceRepo := balance.NewBalanceRepo(*dbProvider)
 	balance := balance.NewBalance(balanceRepo)
 
-	orderRepo := order.NewOrderRepo(config.DB)
+	orderRepo := order.NewOrderRepo(*dbProvider)
 	order := order.NewOrder(orderRepo)
 
 	handlers := handlers.NewHandlers(user, balance, order)

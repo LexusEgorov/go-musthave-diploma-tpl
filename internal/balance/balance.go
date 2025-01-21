@@ -3,8 +3,8 @@ package balance
 import "github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
 
 type balanceRepository interface {
-	Inc(count int) error
-	Dec(count int) error
+	Inc(uID int, count int) error
+	Dec(uID int, count int) error
 	Get(uID int) int
 	GetWithdrawals(uId int) []models.Withdrawal
 }

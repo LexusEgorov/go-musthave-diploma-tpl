@@ -6,13 +6,13 @@ import (
 )
 
 type DB struct {
-	db *sql.DB
+	DB *sql.DB
 }
 
 var db *DB
 
 func (d *DB) createTables() error {
-	if d.db == nil {
+	if d.DB == nil {
 		return errors.New("db isn't found")
 	}
 
@@ -34,6 +34,7 @@ func (d *DB) createTables() error {
 				id SERIAL PRIMARY KEY,
 				uid INTEGER REFERENCES users (id),
 				number INTEGER NOT NULL UNIQUE,
+				bonuses INTEGER,
 				status VARYING(10),
 				created_at TIMESTAMP NOT NULL,
 				updated_at TIMESTAMP NOT NULL
@@ -42,7 +43,7 @@ func (d *DB) createTables() error {
 	}
 
 	for _, q := range createQueries {
-		_, err := d.db.Exec(q)
+		_, err := d.DB.Exec(q)
 
 		if err != nil {
 			return err
@@ -54,13 +55,13 @@ func (d *DB) createTables() error {
 
 func (d *DB) connect(connection string, isCreated bool) error {
 	var err error
-	d.db, err = sql.Open("pgx", connection)
+	d.DB, err = sql.Open("pgx", connection)
 
 	if err != nil {
 		return err
 	}
 
-	err = d.db.Ping()
+	err = d.DB.Ping()
 
 	if err != nil {
 		return err

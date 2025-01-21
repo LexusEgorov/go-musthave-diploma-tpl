@@ -1,8 +1,14 @@
 package user
 
-import "github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
+import (
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/db"
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
+	"github.com/Masterminds/squirrel"
+)
 
 type userRepo struct {
+	db   db.DB
+	psql squirrel.StatementBuilderType
 }
 
 // Create implements UserRepository.
@@ -20,6 +26,9 @@ func (u userRepo) IsRegistered(login string) bool {
 	panic("unimplemented")
 }
 
-func NewUserRepo(connection string) UserRepository {
-	return userRepo{}
+func NewUserRepo(db db.DB) UserRepository {
+	return userRepo{
+		db:   db,
+		psql: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
+	}
 }
