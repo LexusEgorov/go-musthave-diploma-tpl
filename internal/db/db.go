@@ -1,24 +1,58 @@
 package db
 
-import "database/sql"
-
-var db *sql.DB
+import (
+	"database/sql"
+	"errors"
+)
 
 type DB struct {
 	db *sql.DB
 }
 
+var db *DB
+
 func (d *DB) createTables() error {
+	if d.db == nil {
+		return errors.New("db isn't found")
+	}
+
+	createQueries := [2]string{
+		`
+			CREATE TABLE IF NOT EXISTS users 
+			(
+				id SERIAL PRIMARY KEY,
+				login CHARACTER VARYING(100) NOT NULL UNIQUE,
+				password CHARACTER VARYING(100) NOT NULL,
+				balance INTEGER NOT NULL DEFAULT 0 CHECK(balance >= 0),
+				created_at TIMESTAMP NOT NULL,
+				updated_at TIMESTAMP NOT NULL
+			)
+		`,
+		`
+			CREATE TABLE IF NOT EXISTS orders
+			(
+				id SERIAL PRIMARY KEY,
+				uid INTEGER REFERENCES users (id),
+				number INTEGER NOT NULL UNIQUE,
+				status VARYING(10),
+				created_at TIMESTAMP NOT NULL,
+				updated_at TIMESTAMP NOT NULL
+			)
+		`,
+	}
+
+	for _, q := range createQueries {
+		_, err := d.db.Exec(q)
+
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
 
 func (d *DB) connect(connection string, isCreated bool) error {
-	if db != nil {
-		d.db = db
-		return nil
-	}
-
 	var err error
 	d.db, err = sql.Open("pgx", connection)
 
@@ -41,9 +75,13 @@ func (d *DB) connect(connection string, isCreated bool) error {
 }
 
 func NewDB(connection string, isCreated bool) *DB {
-	db := DB{}
+	if db != nil {
+		return db
+	}
+
+	db = &DB{}
 
 	db.connect(connection, isCreated)
 
-	return &db
+	return db
 }
