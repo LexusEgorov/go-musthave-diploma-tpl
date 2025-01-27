@@ -5,8 +5,8 @@ import "github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
 type balanceRepository interface {
 	Inc(uID int, count int) error
 	Dec(uID int, count int) error
-	Get(uID int) int
-	GetWithdrawals(uId int) []models.Withdrawal
+	Get(uID int) (int, error)
+	GetWithdrawals(uId int) ([]models.Withdrawal, error)
 }
 
 type balance struct {

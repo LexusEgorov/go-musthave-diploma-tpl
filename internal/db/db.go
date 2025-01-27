@@ -68,7 +68,6 @@ func (d *DB) connect(connection string, isCreated bool) error {
 	}
 
 	if !isCreated {
-		//насколько правильное такое написание? С одной стороны, написано в 1 строку, а с другой, не совсем явно, что я тут ошибку возвращаю (или nil)
 		return d.createTables()
 	}
 

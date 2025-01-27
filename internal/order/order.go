@@ -4,7 +4,7 @@ import "github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
 
 type orderRepository interface {
 	Add(uID int, o models.Order) error
-	Get(uId int) []models.Order
+	Get(uId int) ([]models.Order, error)
 }
 
 type order struct {

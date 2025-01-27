@@ -2,6 +2,7 @@ package balance
 
 import (
 	"github.com/Masterminds/squirrel"
+	"github.com/sirupsen/logrus"
 
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/db"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
@@ -39,40 +40,40 @@ func (b balanceRepo) Dec(uID int, count int) error {
 }
 
 // Get implements BalanceRepository.
-func (b balanceRepo) Get(uID int) int {
+func (b balanceRepo) Get(uID int) (int, error) {
 	balance := 0
 	sql, args, err := b.psql.Select("balance").From("users").Where("id = ?", uID).ToSql()
 
 	if err != nil {
-		//TODO: LOGGING
-		return balance
+		logrus.Error(err)
+		return balance, err
 	}
 
 	err = b.db.DB.QueryRow(sql, args...).Scan(&balance)
 
 	if err != nil {
-		//TODO: LOGGING
-		return balance
+		logrus.Error(err)
+		return balance, err
 	}
 
-	return balance
+	return balance, nil
 }
 
 // GetWithdrawals implements BalanceRepository.
-func (b balanceRepo) GetWithdrawals(uID int) []models.Withdrawal {
+func (b balanceRepo) GetWithdrawals(uID int) ([]models.Withdrawal, error) {
 	withdrawals := make([]models.Withdrawal, 0)
 	sql, args, err := b.psql.Select("number", "bonuses", "created_at").From("orders").Where("uid = ?", uID).Where("bonuses < 0").ToSql()
 
 	if err != nil {
-		//TODO: LOGGING
-		return withdrawals
+		logrus.Error(err)
+		return withdrawals, err
 	}
 
 	rows, err := b.db.DB.Query(sql, args...)
 
 	if err != nil {
-		//TODO: LOGGING
-		return withdrawals
+		logrus.Error(err)
+		return withdrawals, err
 	}
 
 	defer rows.Close()
@@ -83,7 +84,7 @@ func (b balanceRepo) GetWithdrawals(uID int) []models.Withdrawal {
 		err = rows.Scan(&w.Order, &w.Sum, &w.ProcessedAt)
 
 		if err != nil {
-			//TODO: LOGGING
+			logrus.Error(err)
 			continue
 		}
 
@@ -92,7 +93,7 @@ func (b balanceRepo) GetWithdrawals(uID int) []models.Withdrawal {
 		withdrawals = append(withdrawals, w)
 	}
 
-	return withdrawals
+	return withdrawals, nil
 }
 
 func NewBalanceRepo(db db.DB) balanceRepository {
