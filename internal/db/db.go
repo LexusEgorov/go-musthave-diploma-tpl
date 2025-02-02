@@ -3,6 +3,9 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"fmt"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type DB struct {
@@ -21,8 +24,8 @@ func (d *DB) createTables() error {
 			CREATE TABLE IF NOT EXISTS users 
 			(
 				id SERIAL PRIMARY KEY,
-				login CHARACTER VARYING(100) NOT NULL UNIQUE,
-				password CHARACTER VARYING(100) NOT NULL,
+				login VARCHAR(100) NOT NULL UNIQUE,
+				password VARCHAR(100) NOT NULL,
 				balance INTEGER NOT NULL DEFAULT 0 CHECK(balance >= 0),
 				created_at TIMESTAMP NOT NULL,
 				updated_at TIMESTAMP NOT NULL
@@ -35,7 +38,7 @@ func (d *DB) createTables() error {
 				uid INTEGER REFERENCES users (id),
 				number INTEGER NOT NULL UNIQUE,
 				bonuses INTEGER,
-				status VARYING(10),
+				status VARCHAR(10),
 				created_at TIMESTAMP NOT NULL,
 				updated_at TIMESTAMP NOT NULL
 			)
@@ -81,7 +84,7 @@ func NewDB(connection string, isCreated bool) *DB {
 
 	db = &DB{}
 
-	db.connect(connection, isCreated)
+	fmt.Println(db.connect(connection, isCreated))
 
 	return db
 }
