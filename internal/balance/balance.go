@@ -13,6 +13,8 @@ type balance struct {
 	repo balanceRepository
 }
 
+//TODO: resolve errors with handlers
+
 // Dec implements handlers.BalanceManager.
 func (b balance) Dec(uID int, count int) (currBalance int, err error) {
 	b.repo.Dec(uID, count)
