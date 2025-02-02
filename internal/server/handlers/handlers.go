@@ -9,7 +9,7 @@ import (
 type BalanceManager interface {
 	Inc(uID int, count int) (currBalance int)
 	Dec(uID int, count int) (currBalance int)
-	Get(uID int) int
+	Get(uID int) (currBalance int)
 	GetWithdrawals(uID int) []models.Withdrawal
 }
 

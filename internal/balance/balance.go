@@ -1,6 +1,9 @@
 package balance
 
-import "github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
+import (
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
+	"github.com/sirupsen/logrus"
+)
 
 type balanceRepository interface {
 	Inc(uID int, count int) error
@@ -16,25 +19,38 @@ type balance struct {
 //TODO: resolve errors with handlers
 
 // Dec implements handlers.BalanceManager.
-func (b balance) Dec(uID int, count int) (currBalance int, err error) {
+func (b balance) Dec(uID int, count int) int {
 	b.repo.Dec(uID, count)
-	return b.repo.Get(uID)
+	return b.Get(uID)
 }
 
 // Get implements handlers.BalanceManager.
-func (b balance) Get(uID int) (currBalance int, err error) {
-	return b.repo.Get(uID)
+func (b balance) Get(uID int) int {
+	balance, err := b.repo.Get(uID)
+
+	if err != nil {
+		logrus.Error(err)
+		return 0
+	}
+
+	return balance
 }
 
 // GetWithdrawals implements handlers.BalanceManager.
-func (b balance) GetWithdrawals(uID int) ([]models.Withdrawal, error) {
-	return b.repo.GetWithdrawals(uID)
+func (b balance) GetWithdrawals(uID int) []models.Withdrawal {
+	withdrawals, err := b.repo.GetWithdrawals(uID)
+
+	if err != nil {
+		logrus.Error(err)
+	}
+
+	return withdrawals
 }
 
 // Inc implements handlers.BalanceManager.
-func (b balance) Inc(uID int, count int) (currBalance int, err error) {
+func (b balance) Inc(uID int, count int) int {
 	b.repo.Inc(uID, count)
-	return b.repo.Get(uID)
+	return b.Get(uID)
 }
 
 func NewBalance(repo balanceRepository) balance {
