@@ -5,7 +5,7 @@ import "github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
 type UserRepository interface {
 	Create(u models.User) (int, error)
 	IsRegistered(login string) bool
-	FindById(id uint) models.User
+	FindById(id uint) (*models.User, error)
 }
 
 type user struct {
