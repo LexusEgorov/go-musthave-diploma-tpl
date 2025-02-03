@@ -14,6 +14,30 @@ type userRepo struct {
 	psql squirrel.StatementBuilderType
 }
 
+// Auth implements UserRepository.
+func (u userRepo) Auth(user models.User) (int, bool) {
+	currUser := models.User{}
+	sql, args, err := u.psql.Select("*").From("users").Where("login = ?", user.Login).Where("password = ?", user.Password).ToSql()
+
+	if err != nil {
+		logrus.Error(err)
+		return 0, false
+	}
+
+	err = u.db.DB.QueryRow(sql, args...).Scan(&currUser)
+
+	if err != nil {
+		logrus.Error(err)
+		return 0, false
+	}
+
+	if user.Login == "" {
+		return 0, false
+	}
+
+	return currUser.Id, true
+}
+
 // Create implements UserRepository.
 func (u userRepo) Create(user models.User) (int, error) {
 	currTime := time.Now().String()

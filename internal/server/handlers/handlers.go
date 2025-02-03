@@ -14,8 +14,8 @@ type BalanceManager interface {
 }
 
 type UserManager interface {
-	Register(u models.User) (models.UserAuth, error)
-	Auth(u models.User) (models.UserAuth, error)
+	Register(u models.User) (*models.UserAuth, error)
+	Auth(u models.User) (*models.UserAuth, error)
 }
 
 type OrderManager interface {

@@ -7,6 +7,7 @@ type AccuralOrder struct {
 }
 
 type User struct {
+	Id       int
 	Login    string
 	Password string
 }
