@@ -2,9 +2,9 @@ package user
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/utils"
 )
 
 type UserRepository interface {
@@ -26,9 +26,14 @@ func (u user) Auth(user models.User) (*models.UserAuth, error) {
 		return nil, errors.New("401")
 	}
 
+	jwt, err := utils.CreateJWT(id)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &models.UserAuth{
-		//TODO: JWT
-		Jwt: fmt.Sprint(id),
+		Jwt: jwt,
 	}, nil
 }
 
@@ -44,9 +49,14 @@ func (u user) Register(user models.User) (*models.UserAuth, error) {
 		return nil, err
 	}
 
+	jwt, err := utils.CreateJWT(id)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &models.UserAuth{
-		//TODO: JWT
-		Jwt: fmt.Sprint(id),
+		Jwt: jwt,
 	}, nil
 }
 
