@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/sirupsen/logrus"
 
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/balance"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/config"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/db"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/order"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/server/handlers"
-	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/server/middleware"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/user"
 )
 
@@ -29,6 +29,7 @@ func (s *server) Serve() error {
 		Handler: s.router,
 	}
 
+	logrus.Info("Server is running on: ", s.host)
 	return s.httpServer.ListenAndServe()
 }
 
@@ -42,7 +43,6 @@ func (s *server) Stop() {
 }
 
 func NewServer(config config.Server, router *chi.Mux) *server {
-	//TODO: CONFIG(isTablesCreated default false)
 	dbProvider := db.NewDB(config.DB, false)
 
 	userRepo := user.NewUserRepo(*dbProvider)
@@ -56,20 +56,15 @@ func NewServer(config config.Server, router *chi.Mux) *server {
 
 	handlers := handlers.NewHandlers(user, balance, order)
 
-	s := &server{
-		host:   config.Host,
-		router: router,
-	}
-
-	router.Use(middleware.WithDecoding)
-	router.Use(middleware.WithEncoding)
+	// router.Use(middleware.WithDecoding)
+	// router.Use(middleware.WithEncoding)
 
 	router.Route("/api/user", func(r chi.Router) {
 		r.Post("/register", http.HandlerFunc(handlers.Registration))
 		r.Post("/login", http.HandlerFunc(handlers.Auth))
 
 		r.Group(func(r chi.Router) {
-			r.Use(middleware.WithAuth)
+			// r.Use(middleware.WithAuth)
 
 			r.Post("/orders", http.HandlerFunc(handlers.AddOrders))
 			r.Get("/orders", http.HandlerFunc(handlers.GetOrders))
@@ -82,6 +77,11 @@ func NewServer(config config.Server, router *chi.Mux) *server {
 			r.Get("/withdrawals", http.HandlerFunc(handlers.GetWithdrawals))
 		})
 	})
+
+	s := &server{
+		host:   config.Host,
+		router: router,
+	}
 
 	return s
 }

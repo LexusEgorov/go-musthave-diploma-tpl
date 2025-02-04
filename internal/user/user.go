@@ -1,9 +1,10 @@
 package user
 
 import (
-	"errors"
+	"github.com/sirupsen/logrus"
 
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
+	servererrors "github.com/LexusEgorov/go-musthave-diploma-tpl/internal/serverErrors"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/utils"
 )
 
@@ -23,7 +24,9 @@ func (u user) Auth(user models.User) (*models.UserAuth, error) {
 	id, isFound := u.repo.Auth(user)
 
 	if !isFound {
-		return nil, errors.New("401")
+		err := servererrors.UnauthorizedError{Message: "unknown credentials"}
+		logrus.Error(err.Error())
+		return nil, err
 	}
 
 	jwt, err := utils.CreateJWT(id)
@@ -40,18 +43,22 @@ func (u user) Auth(user models.User) (*models.UserAuth, error) {
 // Register implements handlers.UserManager.
 func (u user) Register(user models.User) (*models.UserAuth, error) {
 	if u.repo.IsRegistered(user.Login) {
-		return nil, errors.New("already registered")
+		err := servererrors.ConflictError{Login: user.Login}
+		logrus.Error(err.Error())
+		return nil, err
 	}
 
 	id, err := u.repo.Create(user)
 
 	if err != nil {
+		logrus.Error(err)
 		return nil, err
 	}
 
 	jwt, err := utils.CreateJWT(id)
 
 	if err != nil {
+		logrus.Error(err)
 		return nil, err
 	}
 

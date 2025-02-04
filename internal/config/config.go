@@ -16,7 +16,7 @@ func NewConfig() Server {
 	var host, db, accuralHost string
 
 	flag.StringVar(&host, "a", "localhost:3000", "host of server")
-	flag.StringVar(&db, "d", "", "connection string to db")
+	flag.StringVar(&db, "d", "host=localhost port=53322 user=root password=root dbname=root sslmode=disable", "connection string to db")
 	flag.StringVar(&accuralHost, "r", "", "host of accural service")
 
 	flag.Parse()

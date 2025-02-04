@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
@@ -84,7 +83,7 @@ func NewDB(connection string, isCreated bool) *DB {
 
 	db = &DB{}
 
-	fmt.Println(db.connect(connection, isCreated))
+	db.connect(connection, isCreated)
 
 	return db
 }

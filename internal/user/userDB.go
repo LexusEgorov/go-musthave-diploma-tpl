@@ -16,48 +16,53 @@ type userRepo struct {
 
 // Auth implements UserRepository.
 func (u userRepo) Auth(user models.User) (int, bool) {
-	currUser := models.User{}
-	sql, args, err := u.psql.Select("*").From("users").Where("login = ?", user.Login).Where("password = ?", user.Password).ToSql()
+	sql, args, err := u.psql.Select("*").
+		From("users").
+		Where("login = ?", user.Login).
+		Where("password = ?", user.Password).
+		ToSql()
 
 	if err != nil {
 		logrus.Error(err)
 		return 0, false
 	}
 
-	err = u.db.DB.QueryRow(sql, args...).Scan(&currUser)
+	rows, err := u.db.DB.Query(sql, args...)
 
 	if err != nil {
 		logrus.Error(err)
 		return 0, false
 	}
 
-	if user.Login == "" {
-		return 0, false
+	if rows.Next() {
+		currUser := models.User{}
+		rows.Scan(&user)
+
+		return currUser.Id, true
 	}
 
-	return currUser.Id, true
+	return 0, false
 }
 
 // Create implements UserRepository.
 func (u userRepo) Create(user models.User) (int, error) {
-	currTime := time.Now().String()
+	currTime := time.Now().Format("2006-01-02 15:04:05")
 	sql, args, err := u.psql.Insert("users").
 		Columns("login", "password", "created_at", "updated_at").
-		Values(user.Login).Values(user.Password).Values(currTime).Values(currTime).ToSql()
+		Values(user.Login, user.Password, currTime, currTime).
+		Suffix("RETURNING id").
+		ToSql()
 
 	if err != nil {
+		logrus.Error(err)
 		return 0, err
 	}
 
-	res, err := u.db.DB.Exec(sql, args...)
+	var uId int
+	err = u.db.DB.QueryRow(sql, args...).Scan(&uId)
 
 	if err != nil {
-		return 0, err
-	}
-
-	uId, err := res.LastInsertId()
-
-	if err != nil {
+		logrus.Error(err)
 		return 0, err
 	}
 
@@ -84,22 +89,24 @@ func (u userRepo) FindById(id uint) (*models.User, error) {
 
 // IsRegistered implements UserRepository.
 func (u userRepo) IsRegistered(login string) bool {
-	user := models.User{}
-	sql, args, err := u.psql.Select("*").From("users").Where("login = ?", login).ToSql()
+	sql, args, err := u.psql.Select("*").
+		From("users").
+		Where("login = ?", login).
+		ToSql()
 
 	if err != nil {
 		logrus.Error(err)
 		return false
 	}
 
-	err = u.db.DB.QueryRow(sql, args...).Scan(&user)
+	rows, err := u.db.DB.Query(sql, args...)
 
 	if err != nil {
 		logrus.Error(err)
 		return false
 	}
 
-	return user.Login != ""
+	return rows.Next()
 }
 
 func NewUserRepo(db db.DB) UserRepository {
