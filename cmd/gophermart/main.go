@@ -1,12 +1,14 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/utils"
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/config"
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/server"
+	"github.com/go-chi/chi"
 )
 
 func main() {
-	token, _ := utils.CreateJWT(1)
-	fmt.Print(utils.ValidateJWT(token))
+	conf := config.NewConfig()
+	serv := server.NewServer(conf, chi.NewRouter())
+
+	serv.Serve()
 }

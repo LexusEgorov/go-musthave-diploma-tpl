@@ -6,15 +6,16 @@ import (
 )
 
 type Server struct {
-	Host        string
-	DB          string
-	AccuralHost string
+	Host            string
+	DB              string
+	AccuralHost     string
+	IsCreatedTables bool
 }
 
 func NewConfig() Server {
 	var host, db, accuralHost string
 
-	flag.StringVar(&host, "a", "", "host of server")
+	flag.StringVar(&host, "a", "localhost:3000", "host of server")
 	flag.StringVar(&db, "d", "", "connection string to db")
 	flag.StringVar(&accuralHost, "r", "", "host of accural service")
 
