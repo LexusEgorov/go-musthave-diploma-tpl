@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     container: golang:1.23
     steps:
+      - name: Проверка версии Go
+        run: go version 
+        
       - name: Checkout code
         uses: actions/checkout@v2
 
