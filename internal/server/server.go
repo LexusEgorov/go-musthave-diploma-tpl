@@ -61,7 +61,7 @@ func NewServer(config config.Server, router *chi.Mux) *server {
 
 	handlers := handlers.NewHandlers(user, balance, order)
 
-	serverClient := client.NewClient(order, config.AccuralHost)
+	serverClient := client.NewClient(order, balance, config.AccuralHost)
 
 	router.Route("/api/user", func(r chi.Router) {
 		r.Post("/register", http.HandlerFunc(handlers.Registration))

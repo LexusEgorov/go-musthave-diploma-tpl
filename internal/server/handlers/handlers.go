@@ -13,7 +13,6 @@ import (
 )
 
 type BalanceManager interface {
-	Inc(uID int, count float64) error
 	Dec(uID int, count float64) error
 	Get(uID int) *models.UserBalance
 	IsEnough(uID int, count float64) bool

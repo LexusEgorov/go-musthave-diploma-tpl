@@ -8,9 +8,9 @@ const (
 )
 
 type AccuralOrder struct {
-	ID     int    `json:"order"`
-	Status string `json:"status"`
-	Count  string `json:"accural"`
+	ID     string  `json:"order"`
+	Status string  `json:"status"`
+	Count  float64 `json:"accural"`
 }
 
 type User struct {

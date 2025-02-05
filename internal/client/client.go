@@ -16,11 +16,16 @@ type orderManager interface {
 	GetQueue() []string
 }
 
+type balanceManager interface {
+	Inc(uID int, count float64) error
+}
+
 type Client struct {
-	host          string
-	clientService *resty.Client
-	orderManager  orderManager
-	stopChan      chan struct{}
+	host           string
+	clientService  *resty.Client
+	orderManager   orderManager
+	balanceManager balanceManager
+	stopChan       chan struct{}
 }
 
 func (c Client) sendRequest(order string) *models.AccuralOrder {
@@ -57,7 +62,16 @@ func (c Client) Run() {
 					order := c.sendRequest(o)
 
 					if order != nil {
-						c.orderManager.Update(*order)
+						update, err := c.orderManager.Update(*order)
+
+						if err != nil {
+							logrus.Error(err)
+							continue
+						}
+
+						if order.Status == models.ProcessedStatus {
+							c.balanceManager.Inc(update.ID, update.Count)
+						}
 					}
 				}
 
@@ -71,10 +85,11 @@ func (c Client) Stop() {
 	close(c.stopChan)
 }
 
-func NewClient(orderManager orderManager, host string) *Client {
+func NewClient(orderManager orderManager, balanceManager balanceManager, host string) *Client {
 	return &Client{
-		clientService: resty.New(),
-		host:          host,
-		orderManager:  orderManager,
+		clientService:  resty.New(),
+		host:           host,
+		orderManager:   orderManager,
+		balanceManager: balanceManager,
 	}
 }
