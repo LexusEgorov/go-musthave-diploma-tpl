@@ -1,0 +1,15 @@
+version: '3.5'
+
+services:
+  pg:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      PGDATA: /data/postgres
+    volumes:
+      - ./pg:/data/postgres
+    ports:
+      - "53322:5432"
+    restart: unless-stopped
