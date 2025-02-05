@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
 	"github.com/go-resty/resty/v2"
 	"github.com/sirupsen/logrus"
+
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
 )
 
 type orderManager interface {
@@ -19,6 +20,7 @@ type Client struct {
 	host          string
 	clientService *resty.Client
 	orderManager  orderManager
+	stopChan      chan struct{}
 }
 
 func (c Client) sendRequest(order string) *models.AccuralOrder {
@@ -41,19 +43,32 @@ func (c Client) sendRequest(order string) *models.AccuralOrder {
 }
 
 func (c Client) Run() {
+	c.stopChan = make(chan struct{})
+
 	go func() {
-		queue := c.orderManager.GetQueue()
+		for {
+			select {
+			case <-c.stopChan:
+				return
+			default:
+				queue := c.orderManager.GetQueue()
 
-		for _, o := range queue {
-			order := c.sendRequest(o)
+				for _, o := range queue {
+					order := c.sendRequest(o)
 
-			if order != nil {
-				c.orderManager.Update(*order)
+					if order != nil {
+						c.orderManager.Update(*order)
+					}
+				}
+
+				time.Sleep(time.Second * 10)
 			}
 		}
-
-		time.Sleep(time.Second * 10)
 	}()
+}
+
+func (c Client) Stop() {
+	close(c.stopChan)
 }
 
 func NewClient(orderManager orderManager, host string) *Client {

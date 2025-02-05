@@ -38,6 +38,7 @@ func (s *server) Serve() error {
 }
 
 func (s *server) Stop() {
+	s.client.Stop()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

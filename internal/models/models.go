@@ -23,10 +23,10 @@ type UserAuth struct {
 }
 
 type Order struct {
-	Number       int    `json:"number"`
-	BonusesCount int    `json:"accural,omitempty"`
-	Status       string `json:"status"`
-	CreatedAt    string `json:"uploaded_at"`
+	Number       int     `json:"number"`
+	BonusesCount float64 `json:"accural,omitempty"`
+	Status       string  `json:"status"`
+	CreatedAt    string  `json:"uploaded_at"`
 }
 
 type Withdrawal struct {
