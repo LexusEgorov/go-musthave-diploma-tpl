@@ -13,10 +13,10 @@ import (
 )
 
 type BalanceManager interface {
-	Inc(uID int, count int) (currBalance int)
-	Dec(uID int, count int) (currBalance int)
-	Get(uID int) (currBalance int)
-	GetWithdrawals(uID int) []models.Withdrawal
+	Inc(uID int, count float64) error
+	Dec(uID int, count float64) error
+	Get(uID int) *models.UserBalance
+	IsEnough(uId int, count float64) bool
 }
 
 type UserManager interface {
@@ -25,8 +25,9 @@ type UserManager interface {
 }
 
 type OrderManager interface {
-	Add(uID int, number string) error
+	Add(uID int, number string, wdSum *float64) error
 	Get(uID int) []models.Order
+	GetWithdrawals(uID int) []models.Withdrawal
 }
 
 type handlers struct {
@@ -108,14 +109,9 @@ func (h handlers) AddOrders(w http.ResponseWriter, r *http.Request) {
 
 	jwt := r.Header.Get("Authorization")
 
-	uId, err := utils.ValidateJWT(jwt)
+	uId, _ := utils.ValidateJWT(jwt)
 
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	err = h.order.Add(uId, string(body))
+	err = h.order.Add(uId, string(body), nil)
 
 	if err != nil {
 		if errors.As(err, &servererrors.OkayError{}) {
@@ -141,12 +137,127 @@ func (h handlers) AddOrders(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h handlers) GetOrders(w http.ResponseWriter, r *http.Request) {}
+func (h handlers) GetOrders(w http.ResponseWriter, r *http.Request) {
+	jwt := r.Header.Get("Authorization")
 
-func (h handlers) GetBalance(w http.ResponseWriter, r *http.Request)      {}
-func (h handlers) WithdrawBalance(w http.ResponseWriter, r *http.Request) {}
+	uId, _ := utils.ValidateJWT(jwt)
 
-func (h handlers) GetWithdrawals(w http.ResponseWriter, r *http.Request) {}
+	orders := h.order.Get(uId)
+
+	if len(orders) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	response, err := json.Marshal(orders)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+}
+
+func (h handlers) GetBalance(w http.ResponseWriter, r *http.Request) {
+	jwt := r.Header.Get("Authorization")
+
+	uId, _ := utils.ValidateJWT(jwt)
+
+	balance := h.balance.Get(uId)
+
+	response, err := json.Marshal(balance)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
+}
+
+func (h handlers) WithdrawBalance(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+
+	if err != nil {
+		logrus.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	jwt := r.Header.Get("Authorization")
+
+	uId, _ := utils.ValidateJWT(jwt)
+	request := models.WdBalance{}
+
+	if err = json.Unmarshal(body, &request); err != nil {
+		var syntaxError *json.SyntaxError
+		if errors.As(err, &syntaxError) {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		logrus.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if !h.balance.IsEnough(uId, request.Sum) {
+		w.WriteHeader(http.StatusPaymentRequired)
+		return
+	}
+
+	err = h.order.Add(uId, request.Order, &request.Sum)
+
+	if err != nil {
+		if errors.As(err, &servererrors.WrongNumberError{}) {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			return
+		}
+
+		logrus.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	err = h.balance.Dec(uId, request.Sum)
+
+	if err != nil {
+		logrus.Error(err)
+
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h handlers) GetWithdrawals(w http.ResponseWriter, r *http.Request) {
+	jwt := r.Header.Get("Authorization")
+
+	uId, _ := utils.ValidateJWT(jwt)
+
+	withdrawals := h.order.GetWithdrawals(uId)
+
+	if len(withdrawals) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	response, err := json.Marshal(withdrawals)
+
+	if err != nil {
+		logrus.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
+}
 
 func NewHandlers(user UserManager, balance BalanceManager, order OrderManager) handlers {
 	return handlers{

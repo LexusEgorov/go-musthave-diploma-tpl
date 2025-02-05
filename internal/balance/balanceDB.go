@@ -1,6 +1,8 @@
 package balance
 
 import (
+	"errors"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/sirupsen/logrus"
 
@@ -14,8 +16,12 @@ type balanceRepo struct {
 }
 
 // Inc implements BalanceRepository.
-func (b balanceRepo) Inc(uID int, count int) error {
-	sql, args, err := b.psql.Update("users").Where("id = ?", uID).Set("balance", squirrel.Expr("balance + ?", count)).ToSql()
+func (b balanceRepo) Inc(uID int, count float64) error {
+	sql, args, err := b.psql.Update("users").
+		Where("id = ?", uID).
+		Set("balance", squirrel.Expr("balance + ?", count)).
+		Set("balance_wd", squirrel.Expr("balance_wd + ?", count*-1)).
+		ToSql()
 
 	if err != nil {
 		return err
@@ -27,8 +33,12 @@ func (b balanceRepo) Inc(uID int, count int) error {
 }
 
 // Dec implements BalanceRepository.
-func (b balanceRepo) Dec(uID int, count int) error {
-	sql, args, err := b.psql.Update("users").Where("id = ?", uID).Set("balance", squirrel.Expr("balance - ?", count)).ToSql()
+func (b balanceRepo) Dec(uID int, count float64) error {
+	sql, args, err := b.psql.Update("users").
+		Where("id = ?", uID).
+		Set("balance", squirrel.Expr("balance - ?", count)).
+		Set("balance_wd", squirrel.Expr("balance_wd - ?", count*-1)).
+		ToSql()
 
 	if err != nil {
 		return err
@@ -40,60 +50,32 @@ func (b balanceRepo) Dec(uID int, count int) error {
 }
 
 // Get implements BalanceRepository.
-func (b balanceRepo) Get(uID int) (int, error) {
-	balance := 0
-	sql, args, err := b.psql.Select("balance").From("users").Where("id = ?", uID).ToSql()
+func (b balanceRepo) Get(uID int) (*models.UserBalance, error) {
+	sql, args, err := b.psql.Select("balance", "balance_wd").
+		From("users").
+		Where("id = ?", uID).
+		ToSql()
 
 	if err != nil {
 		logrus.Error(err)
-		return balance, err
-	}
-
-	err = b.db.DB.QueryRow(sql, args...).Scan(&balance)
-
-	if err != nil {
-		logrus.Error(err)
-		return balance, err
-	}
-
-	return balance, nil
-}
-
-// GetWithdrawals implements BalanceRepository.
-func (b balanceRepo) GetWithdrawals(uID int) ([]models.Withdrawal, error) {
-	withdrawals := make([]models.Withdrawal, 0)
-	sql, args, err := b.psql.Select("number", "bonuses", "created_at").From("orders").Where("uid = ?", uID).Where("bonuses < 0").ToSql()
-
-	if err != nil {
-		logrus.Error(err)
-		return withdrawals, err
+		return nil, err
 	}
 
 	rows, err := b.db.DB.Query(sql, args...)
 
 	if err != nil {
 		logrus.Error(err)
-		return withdrawals, err
+		return nil, err
 	}
 
-	defer rows.Close()
+	if rows.Next() {
+		balance := models.UserBalance{}
 
-	for rows.Next() {
-		var w models.Withdrawal
-
-		err = rows.Scan(&w.Order, &w.Sum, &w.ProcessedAt)
-
-		if err != nil {
-			logrus.Error(err)
-			continue
-		}
-
-		w.Sum = w.Sum * -1
-
-		withdrawals = append(withdrawals, w)
+		rows.Scan(&balance.Balance, &balance.BalanceWD)
+		return &balance, nil
 	}
 
-	return withdrawals, nil
+	return nil, errors.New("no data")
 }
 
 func NewBalanceRepo(db db.DB) balanceRepository {

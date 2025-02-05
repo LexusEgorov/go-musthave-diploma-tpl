@@ -8,19 +8,18 @@ import (
 )
 
 type orderRepository interface {
-	Add(uID int, o string) error
+	Add(uID int, o string, count float64) error
 	Get(uId int) ([]models.Order, error)
 	GetOrder(o string) (int, error)
+	GetWithdrawals(uId int) ([]models.Withdrawal, error)
 }
 
 type order struct {
 	repo orderRepository
 }
 
-//TODO: resolve errors with handlers
-
 // Add implements handlers.OrderManager.
-func (o order) Add(uID int, number string) error {
+func (o order) Add(uID int, number string, wdSum *float64) error {
 	if !utils.LunaCheck(number) {
 		return servererrors.WrongNumberError{Number: number}
 	}
@@ -33,7 +32,13 @@ func (o order) Add(uID int, number string) error {
 	}
 
 	if user == 0 {
-		return o.repo.Add(uID, number)
+		var sum float64 = 0
+
+		if wdSum != nil {
+			sum = *wdSum * -1
+		}
+
+		return o.repo.Add(uID, number, sum)
 	}
 
 	if user == uID {
@@ -53,6 +58,17 @@ func (o order) Get(uID int) []models.Order {
 	}
 
 	return order
+}
+
+// GetWithdrawals implements handlers.OrderManager.
+func (o order) GetWithdrawals(uID int) []models.Withdrawal {
+	withdrawals, err := o.repo.GetWithdrawals(uID)
+
+	if err != nil {
+		logrus.Error(err)
+	}
+
+	return withdrawals
 }
 
 func NewOrder(repo orderRepository) order {

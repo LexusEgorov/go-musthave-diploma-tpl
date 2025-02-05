@@ -31,3 +31,9 @@ type OkayError struct{}
 func (o OkayError) Error() string {
 	return "we're feeling ok"
 }
+
+type PayError struct{}
+
+func (p PayError) Error() string {
+	return "no money"
+}

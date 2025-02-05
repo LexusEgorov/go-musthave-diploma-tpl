@@ -24,14 +24,24 @@ type UserAuth struct {
 }
 
 type Order struct {
-	ID           int
-	Number       int
-	BonusesCount int
-	Status       string
+	Number       int    `json:"number"`
+	BonusesCount int    `json:"accural,omitempty"`
+	Status       string `json:"status"`
+	CreatedAt    string `json:"uploaded_at"`
 }
 
 type Withdrawal struct {
-	Order       int
-	Sum         int
-	ProcessedAt string
+	Order       int     `json:"order"`
+	Sum         float64 `json:"sum"`
+	ProcessedAt string  `json:"processed_at"`
+}
+
+type UserBalance struct {
+	Balance   float64 `json:"current"`
+	BalanceWD float64 `json:"withdrawn"`
+}
+
+type WdBalance struct {
+	Order string  `json:"order"`
+	Sum   float64 `json:"sum"`
 }

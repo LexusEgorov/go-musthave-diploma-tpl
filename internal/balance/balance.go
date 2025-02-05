@@ -6,51 +6,47 @@ import (
 )
 
 type balanceRepository interface {
-	Inc(uID int, count int) error
-	Dec(uID int, count int) error
-	Get(uID int) (int, error)
-	GetWithdrawals(uId int) ([]models.Withdrawal, error)
+	Inc(uID int, count float64) error
+	Dec(uID int, count float64) error
+	Get(uID int) (*models.UserBalance, error)
 }
 
 type balance struct {
 	repo balanceRepository
 }
 
-//TODO: resolve errors with handlers
+// IsEnough implements handlers.BalanceManager.
+func (b balance) IsEnough(uId int, count float64) bool {
+	currBalance, err := b.repo.Get(uId)
+
+	if err != nil {
+		logrus.Error(err)
+		return false
+	}
+
+	return currBalance.Balance >= count
+}
 
 // Dec implements handlers.BalanceManager.
-func (b balance) Dec(uID int, count int) int {
-	b.repo.Dec(uID, count)
-	return b.Get(uID)
+func (b balance) Dec(uID int, count float64) error {
+	return b.repo.Dec(uID, count)
+}
+
+// Inc implements handlers.BalanceManager.
+func (b balance) Inc(uID int, count float64) error {
+	return b.repo.Inc(uID, count)
 }
 
 // Get implements handlers.BalanceManager.
-func (b balance) Get(uID int) int {
+func (b balance) Get(uID int) *models.UserBalance {
 	balance, err := b.repo.Get(uID)
 
 	if err != nil {
 		logrus.Error(err)
-		return 0
+		return nil
 	}
 
 	return balance
-}
-
-// GetWithdrawals implements handlers.BalanceManager.
-func (b balance) GetWithdrawals(uID int) []models.Withdrawal {
-	withdrawals, err := b.repo.GetWithdrawals(uID)
-
-	if err != nil {
-		logrus.Error(err)
-	}
-
-	return withdrawals
-}
-
-// Inc implements handlers.BalanceManager.
-func (b balance) Inc(uID int, count int) int {
-	b.repo.Inc(uID, count)
-	return b.Get(uID)
 }
 
 func NewBalance(repo balanceRepository) balance {
