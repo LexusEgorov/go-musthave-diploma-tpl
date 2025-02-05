@@ -114,7 +114,7 @@ func (o orderRepo) GetOrder(number string) (int, error) {
 
 // Add implements OrderRepository.
 func (o orderRepo) Add(uID int, number string, count float64) error {
-	status := models.RegisteredStatus
+	status := models.NewStatus
 
 	if count != 0 {
 		status = models.ProcessedStatus
@@ -169,7 +169,9 @@ func (o orderRepo) Get(uID int) ([]models.Order, error) {
 			continue
 		}
 
-		orders = append(orders, order)
+		if order.BonusesCount > 0 {
+			orders = append(orders, order)
+		}
 	}
 
 	return orders, nil

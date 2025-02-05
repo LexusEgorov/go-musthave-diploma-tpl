@@ -1,6 +1,7 @@
 package models
 
 const (
+	NewStatus        = "NEW"
 	RegisteredStatus = "REGISTERED"
 	InvalidStatus    = "INVALID"
 	ProcessingStatus = "PROCESSING"
