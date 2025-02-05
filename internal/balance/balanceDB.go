@@ -20,7 +20,6 @@ func (b balanceRepo) Inc(uID int, count float64) error {
 	sql, args, err := b.psql.Update("users").
 		Where("id = ?", uID).
 		Set("balance", squirrel.Expr("balance + ?", count)).
-		Set("balance_wd", squirrel.Expr("balance_wd + ?", count*-1)).
 		ToSql()
 
 	if err != nil {

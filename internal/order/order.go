@@ -9,9 +9,9 @@ import (
 
 type orderRepository interface {
 	Add(uID int, o string, count float64) error
-	Get(uId int) ([]models.Order, error)
+	Get(uID int) ([]models.Order, error)
 	GetOrder(o string) (int, error)
-	GetWithdrawals(uId int) ([]models.Withdrawal, error)
+	GetWithdrawals(uID int) ([]models.Withdrawal, error)
 }
 
 type order struct {

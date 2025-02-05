@@ -35,16 +35,16 @@ func (o orderRepo) GetOrder(number string) (int, error) {
 	}
 
 	if rows.Next() {
-		var uId int
+		var uID int
 
-		err = rows.Scan(&uId)
+		err = rows.Scan(&uID)
 
 		if err != nil {
 			logrus.Error(err)
 			return 0, err
 		}
 
-		return uId, nil
+		return uID, nil
 	}
 
 	return 0, nil
@@ -75,11 +75,11 @@ func (o orderRepo) Add(uID int, number string, count float64) error {
 }
 
 // Get implements OrderRepository.
-func (o orderRepo) Get(uId int) ([]models.Order, error) {
+func (o orderRepo) Get(uID int) ([]models.Order, error) {
 	orders := make([]models.Order, 0)
 	sql, args, err := o.psql.Select("number", "bonuses", "status", "created_at").
 		From("orders").
-		Where("uID = ?", uId).
+		Where("uID = ?", uID).
 		OrderBy("created_at").
 		ToSql()
 

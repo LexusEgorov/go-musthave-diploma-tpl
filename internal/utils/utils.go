@@ -46,12 +46,12 @@ func LunaCheck(order string) bool {
 	return checkSum%10 == 0
 }
 
-func CreateJWT(uId int) (string, error) {
+func CreateJWT(uID int) (string, error) {
 	mySigningKey := []byte(key)
 
 	claims := &jwt.StandardClaims{
 		ExpiresAt: time.Now().Unix() + int64(exp),
-		Issuer:    fmt.Sprint(uId),
+		Issuer:    fmt.Sprint(uID),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

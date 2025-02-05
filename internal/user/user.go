@@ -12,7 +12,7 @@ type UserRepository interface {
 	Create(u models.User) (int, error)
 	IsRegistered(login string) bool
 	Auth(u models.User) (int, bool)
-	FindById(id uint) (*models.User, error)
+	FindByID(id uint) (*models.User, error)
 }
 
 type user struct {

@@ -16,8 +16,8 @@ type balance struct {
 }
 
 // IsEnough implements handlers.BalanceManager.
-func (b balance) IsEnough(uId int, count float64) bool {
-	currBalance, err := b.repo.Get(uId)
+func (b balance) IsEnough(uID int, count float64) bool {
+	currBalance, err := b.repo.Get(uID)
 
 	if err != nil {
 		logrus.Error(err)

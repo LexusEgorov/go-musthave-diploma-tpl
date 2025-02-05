@@ -14,7 +14,7 @@ type AccuralOrder struct {
 }
 
 type User struct {
-	Id       int
+	UD       int
 	Login    string
 	Password string
 }

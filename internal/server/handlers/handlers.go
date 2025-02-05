@@ -16,7 +16,7 @@ type BalanceManager interface {
 	Inc(uID int, count float64) error
 	Dec(uID int, count float64) error
 	Get(uID int) *models.UserBalance
-	IsEnough(uId int, count float64) bool
+	IsEnough(uID int, count float64) bool
 }
 
 type UserManager interface {
@@ -109,9 +109,9 @@ func (h handlers) AddOrders(w http.ResponseWriter, r *http.Request) {
 
 	jwt := r.Header.Get("Authorization")
 
-	uId, _ := utils.ValidateJWT(jwt)
+	uID, _ := utils.ValidateJWT(jwt)
 
-	err = h.order.Add(uId, string(body), nil)
+	err = h.order.Add(uID, string(body), nil)
 
 	if err != nil {
 		if errors.As(err, &servererrors.OkayError{}) {
@@ -140,9 +140,9 @@ func (h handlers) AddOrders(w http.ResponseWriter, r *http.Request) {
 func (h handlers) GetOrders(w http.ResponseWriter, r *http.Request) {
 	jwt := r.Header.Get("Authorization")
 
-	uId, _ := utils.ValidateJWT(jwt)
+	uID, _ := utils.ValidateJWT(jwt)
 
-	orders := h.order.Get(uId)
+	orders := h.order.Get(uID)
 
 	if len(orders) == 0 {
 		w.WriteHeader(http.StatusNoContent)
@@ -164,9 +164,9 @@ func (h handlers) GetOrders(w http.ResponseWriter, r *http.Request) {
 func (h handlers) GetBalance(w http.ResponseWriter, r *http.Request) {
 	jwt := r.Header.Get("Authorization")
 
-	uId, _ := utils.ValidateJWT(jwt)
+	uID, _ := utils.ValidateJWT(jwt)
 
-	balance := h.balance.Get(uId)
+	balance := h.balance.Get(uID)
 
 	response, err := json.Marshal(balance)
 
@@ -190,7 +190,7 @@ func (h handlers) WithdrawBalance(w http.ResponseWriter, r *http.Request) {
 
 	jwt := r.Header.Get("Authorization")
 
-	uId, _ := utils.ValidateJWT(jwt)
+	uID, _ := utils.ValidateJWT(jwt)
 	request := models.WdBalance{}
 
 	if err = json.Unmarshal(body, &request); err != nil {
@@ -205,12 +205,12 @@ func (h handlers) WithdrawBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !h.balance.IsEnough(uId, request.Sum) {
+	if !h.balance.IsEnough(uID, request.Sum) {
 		w.WriteHeader(http.StatusPaymentRequired)
 		return
 	}
 
-	err = h.order.Add(uId, request.Order, &request.Sum)
+	err = h.order.Add(uID, request.Order, &request.Sum)
 
 	if err != nil {
 		if errors.As(err, &servererrors.WrongNumberError{}) {
@@ -223,7 +223,7 @@ func (h handlers) WithdrawBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.balance.Dec(uId, request.Sum)
+	err = h.balance.Dec(uID, request.Sum)
 
 	if err != nil {
 		logrus.Error(err)
@@ -238,9 +238,9 @@ func (h handlers) WithdrawBalance(w http.ResponseWriter, r *http.Request) {
 func (h handlers) GetWithdrawals(w http.ResponseWriter, r *http.Request) {
 	jwt := r.Header.Get("Authorization")
 
-	uId, _ := utils.ValidateJWT(jwt)
+	uID, _ := utils.ValidateJWT(jwt)
 
-	withdrawals := h.order.GetWithdrawals(uId)
+	withdrawals := h.order.GetWithdrawals(uID)
 
 	if len(withdrawals) == 0 {
 		w.WriteHeader(http.StatusNoContent)

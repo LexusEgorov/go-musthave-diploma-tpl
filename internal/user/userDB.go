@@ -35,10 +35,10 @@ func (u userRepo) Auth(user models.User) (int, bool) {
 	}
 
 	if rows.Next() {
-		var uId int
-		rows.Scan(&uId)
+		var uID int
+		rows.Scan(&uID)
 
-		return uId, true
+		return uID, true
 	}
 
 	return 0, false
@@ -58,19 +58,19 @@ func (u userRepo) Create(user models.User) (int, error) {
 		return 0, err
 	}
 
-	var uId int
-	err = u.db.DB.QueryRow(sql, args...).Scan(&uId)
+	var uID int
+	err = u.db.DB.QueryRow(sql, args...).Scan(&uID)
 
 	if err != nil {
 		logrus.Error(err)
 		return 0, err
 	}
 
-	return int(uId), nil
+	return int(uID), nil
 }
 
 // FindById implements UserRepository.
-func (u userRepo) FindById(id uint) (*models.User, error) {
+func (u userRepo) FindByID(id uint) (*models.User, error) {
 	user := models.User{}
 	sql, args, err := u.psql.Select("login", "password", "balance").From("users").Where("uId = ?", id).ToSql()
 
