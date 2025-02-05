@@ -15,6 +15,67 @@ type orderRepo struct {
 	psql squirrel.StatementBuilderType
 }
 
+// Update implements orderRepository.
+func (o orderRepo) Update(order models.AccuralOrder) (*models.UserUpdate, error) {
+	sql, args, err := o.psql.Update("orders").
+		Set("status", order.Status).
+		Set("bonuses", order.Count).
+		Where("number = ?", order.ID).
+		Suffix("RETURNING bonuses, uId").
+		ToSql()
+
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	update := models.UserUpdate{}
+	err = o.db.DB.QueryRow(sql, args...).Scan(&update.Count, &update.ID)
+
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	return &update, nil
+}
+
+// GetQueue implements orderRepository.
+func (o orderRepo) GetQueue() []string {
+	queue := make([]string, 0)
+	sql, args, err := o.psql.Select("number").
+		From("orders").
+		Where("status != ?", models.ProcessedStatus).
+		ToSql()
+
+	if err != nil {
+		logrus.Error(err)
+		return queue
+	}
+
+	rows, err := o.db.DB.Query(sql, args...)
+
+	if err != nil {
+		logrus.Error(err)
+		return queue
+	}
+
+	for rows.Next() {
+		var row string
+
+		err = rows.Scan(&row)
+
+		if err != nil {
+			logrus.Error(err)
+			break
+		}
+
+		queue = append(queue, row)
+	}
+
+	return queue
+}
+
 // GetOrder implements orderRepository.
 func (o orderRepo) GetOrder(number string) (int, error) {
 	sql, args, err := o.psql.Select("uid").

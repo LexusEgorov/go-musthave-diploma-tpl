@@ -14,7 +14,6 @@ type AccuralOrder struct {
 }
 
 type User struct {
-	UD       int
 	Login    string
 	Password string
 }
@@ -44,4 +43,9 @@ type UserBalance struct {
 type WdBalance struct {
 	Order string  `json:"order"`
 	Sum   float64 `json:"sum"`
+}
+
+type UserUpdate struct {
+	ID    int
+	Count float64
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/balance"
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/client"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/config"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/db"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/order"
@@ -19,6 +20,7 @@ import (
 )
 
 type server struct {
+	client     client.Client
 	host       string
 	router     *chi.Mux
 	httpServer *http.Server
@@ -30,6 +32,7 @@ func (s *server) Serve() error {
 		Handler: s.router,
 	}
 
+	s.client.Run()
 	logrus.Info("Server is running on: ", s.host)
 	return s.httpServer.ListenAndServe()
 }
@@ -57,8 +60,7 @@ func NewServer(config config.Server, router *chi.Mux) *server {
 
 	handlers := handlers.NewHandlers(user, balance, order)
 
-	// router.Use(middleware.WithDecoding)
-	// router.Use(middleware.WithEncoding)
+	serverClient := client.NewClient(order, config.Host)
 
 	router.Route("/api/user", func(r chi.Router) {
 		r.Post("/register", http.HandlerFunc(handlers.Registration))
@@ -80,6 +82,7 @@ func NewServer(config config.Server, router *chi.Mux) *server {
 	})
 
 	s := &server{
+		client: *serverClient,
 		host:   config.Host,
 		router: router,
 	}

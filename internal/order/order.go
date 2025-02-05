@@ -12,10 +12,21 @@ type orderRepository interface {
 	Get(uID int) ([]models.Order, error)
 	GetOrder(o string) (int, error)
 	GetWithdrawals(uID int) ([]models.Withdrawal, error)
+	Update(o models.AccuralOrder) (*models.UserUpdate, error)
+	GetQueue() []string
 }
 
 type order struct {
 	repo orderRepository
+}
+
+// GetQueue implements client.orderManager.
+func (o order) GetQueue() []string {
+	return o.repo.GetQueue()
+}
+
+func (o order) Update(order models.AccuralOrder) (*models.UserUpdate, error) {
+	return o.repo.Update(order)
 }
 
 // Add implements handlers.OrderManager.
