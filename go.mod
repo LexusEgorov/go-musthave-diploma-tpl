@@ -1,6 +1,6 @@
 module github.com/LexusEgorov/go-musthave-diploma-tpl
 
-go 1.23.1
+go 1.22
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
