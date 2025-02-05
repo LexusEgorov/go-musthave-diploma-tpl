@@ -11,7 +11,7 @@ const (
 type AccuralOrder struct {
 	ID     string  `json:"order"`
 	Status string  `json:"status"`
-	Count  float64 `json:"accural"`
+	Count  float64 `json:"accrual"`
 }
 
 type User struct {
@@ -25,7 +25,7 @@ type UserAuth struct {
 
 type Order struct {
 	Number       string  `json:"number"`
-	BonusesCount float64 `json:"accural,omitempty"`
+	BonusesCount float64 `json:"accrual,omitempty"`
 	Status       string  `json:"status"`
 	CreatedAt    string  `json:"uploaded_at"`
 }
