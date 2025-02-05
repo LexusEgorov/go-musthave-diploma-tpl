@@ -169,7 +169,7 @@ func (o orderRepo) Get(uID int) ([]models.Order, error) {
 			continue
 		}
 
-		if order.BonusesCount > 0 {
+		if order.BonusesCount >= 0 {
 			orders = append(orders, order)
 		}
 	}
