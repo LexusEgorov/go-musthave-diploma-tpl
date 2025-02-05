@@ -12,9 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     container: golang:1.23
     steps:
-      - name: Проверка версии Go
-        run: go version 
-        
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -31,7 +28,10 @@ jobs:
         run: |
           chmod -R +x $GITHUB_WORKSPACE/.tools/statictest
           mv $GITHUB_WORKSPACE/.tools/statictest /usr/local/bin/statictest
-
+      
+      - name: Check go version
+        run: go version 
+      
       - name: Run statictest
         run: |
           go vet -vettool=$(which statictest) ./...
