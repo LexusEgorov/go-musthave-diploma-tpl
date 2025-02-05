@@ -29,7 +29,10 @@ type Client struct {
 }
 
 func (c Client) sendRequest(order string) *models.AccuralOrder {
-	res, err := c.clientService.NewRequest().Get(fmt.Sprintf("%s/api/orders/%s", c.host, order))
+	requestHost := fmt.Sprintf("%s/api/orders/%s", c.host, order)
+	logrus.Info(fmt.Sprintf("sending request: %s", requestHost))
+
+	res, err := c.clientService.NewRequest().Get(requestHost)
 
 	if err != nil {
 		logrus.Error(err)
