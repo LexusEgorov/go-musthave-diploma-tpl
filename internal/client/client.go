@@ -42,6 +42,8 @@ func (c Client) sendRequest(order string) *models.AccuralOrder {
 	checkedOrder := models.AccuralOrder{}
 	err = json.Unmarshal(res.Body(), &checkedOrder)
 
+	logrus.Info(checkedOrder)
+
 	if err != nil {
 		logrus.Error(err)
 		return nil
