@@ -16,7 +16,7 @@ type userRepo struct {
 
 // Auth implements UserRepository.
 func (u userRepo) Auth(user models.User) (int, bool) {
-	sql, args, err := u.psql.Select("*").
+	sql, args, err := u.psql.Select("id").
 		From("users").
 		Where("login = ?", user.Login).
 		Where("password = ?", user.Password).
@@ -35,10 +35,10 @@ func (u userRepo) Auth(user models.User) (int, bool) {
 	}
 
 	if rows.Next() {
-		currUser := models.User{}
-		rows.Scan(&user)
+		var uId int
+		rows.Scan(&uId)
 
-		return currUser.Id, true
+		return uId, true
 	}
 
 	return 0, false

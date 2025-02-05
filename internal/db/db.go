@@ -26,6 +26,7 @@ func (d *DB) createTables() error {
 				login VARCHAR(100) NOT NULL UNIQUE,
 				password VARCHAR(100) NOT NULL,
 				balance INTEGER NOT NULL DEFAULT 0 CHECK(balance >= 0),
+				balance_wd INTEGER NOT NULL DEFAULT 0 CHECK(balance_wd >= 0),
 				created_at TIMESTAMP NOT NULL,
 				updated_at TIMESTAMP NOT NULL
 			)
@@ -35,7 +36,7 @@ func (d *DB) createTables() error {
 			(
 				id SERIAL PRIMARY KEY,
 				uid INTEGER REFERENCES users (id),
-				number INTEGER NOT NULL UNIQUE,
+				number VARCHAR(15) NOT NULL UNIQUE,
 				bonuses INTEGER,
 				status VARCHAR(10),
 				created_at TIMESTAMP NOT NULL,

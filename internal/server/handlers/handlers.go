@@ -8,6 +8,7 @@ import (
 
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/models"
 	servererrors "github.com/LexusEgorov/go-musthave-diploma-tpl/internal/serverErrors"
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -24,7 +25,7 @@ type UserManager interface {
 }
 
 type OrderManager interface {
-	Add(uID int, o models.Order) error
+	Add(uID int, number string) error
 	Get(uID int) []models.Order
 }
 
@@ -96,8 +97,51 @@ func (h handlers) Auth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Authorization", user.Jwt)
 }
 
+func (h handlers) AddOrders(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+
+	if err != nil {
+		logrus.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	jwt := r.Header.Get("Authorization")
+
+	uId, err := utils.ValidateJWT(jwt)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	err = h.order.Add(uId, string(body))
+
+	if err != nil {
+		if errors.As(err, &servererrors.OkayError{}) {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		if errors.As(err, &servererrors.ConflictError{}) {
+			w.WriteHeader(http.StatusConflict)
+			return
+		}
+
+		if errors.As(err, &servererrors.WrongNumberError{}) {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			return
+		}
+
+		logrus.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+}
+
 func (h handlers) GetOrders(w http.ResponseWriter, r *http.Request) {}
-func (h handlers) AddOrders(w http.ResponseWriter, r *http.Request) {}
 
 func (h handlers) GetBalance(w http.ResponseWriter, r *http.Request)      {}
 func (h handlers) WithdrawBalance(w http.ResponseWriter, r *http.Request) {}

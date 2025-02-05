@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -14,8 +15,35 @@ const (
 	exp = time.Hour
 )
 
-func LunaCheck(order int) bool {
-	return false
+func LunaCheck(order string) bool {
+	checkSum := 0
+	isCalculate := false
+
+	if len(order)%2 == 0 {
+		isCalculate = true
+	}
+
+	for _, v := range order {
+		currNum, err := strconv.Atoi(string(v))
+
+		if err != nil {
+			logrus.Error(err)
+			return false
+		}
+
+		if isCalculate {
+			currNum *= 2
+
+			if currNum > 9 {
+				currNum -= 9
+			}
+		}
+
+		isCalculate = !isCalculate
+		checkSum += currNum
+	}
+
+	return checkSum%10 == 0
 }
 
 func CreateJWT(uId int) (string, error) {

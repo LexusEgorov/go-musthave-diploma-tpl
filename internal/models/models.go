@@ -1,5 +1,12 @@
 package models
 
+const (
+	RegisteredStatus = "REGISTERED"
+	InvalidStatus    = "INVALID"
+	ProcessingStatus = "PROCESSING"
+	ProcessedStatus  = "PROCESSED"
+)
+
 type AccuralOrder struct {
 	ID     int    `json:"order"`
 	Status string `json:"status"`

@@ -43,7 +43,7 @@ func (u user) Auth(user models.User) (*models.UserAuth, error) {
 // Register implements handlers.UserManager.
 func (u user) Register(user models.User) (*models.UserAuth, error) {
 	if u.repo.IsRegistered(user.Login) {
-		err := servererrors.ConflictError{Login: user.Login}
+		err := servererrors.ConflictError{Used: user.Login}
 		logrus.Error(err.Error())
 		return nil, err
 	}
