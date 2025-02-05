@@ -14,6 +14,7 @@ import (
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/db"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/order"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/server/handlers"
+	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/server/middleware"
 	"github.com/LexusEgorov/go-musthave-diploma-tpl/internal/user"
 )
 
@@ -64,7 +65,7 @@ func NewServer(config config.Server, router *chi.Mux) *server {
 		r.Post("/login", http.HandlerFunc(handlers.Auth))
 
 		r.Group(func(r chi.Router) {
-			// r.Use(middleware.WithAuth)
+			r.Use(middleware.WithAuth)
 
 			r.Post("/orders", http.HandlerFunc(handlers.AddOrders))
 			r.Get("/orders", http.HandlerFunc(handlers.GetOrders))
