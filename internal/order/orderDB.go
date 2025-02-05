@@ -46,6 +46,7 @@ func (o orderRepo) GetQueue() []string {
 	sql, args, err := o.psql.Select("number").
 		From("orders").
 		Where("status != ?", models.ProcessedStatus).
+		Where("status != ?", models.InvalidStatus).
 		ToSql()
 
 	if err != nil {

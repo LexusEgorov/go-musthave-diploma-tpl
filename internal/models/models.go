@@ -23,7 +23,7 @@ type UserAuth struct {
 }
 
 type Order struct {
-	Number       int     `json:"number"`
+	Number       string  `json:"number"`
 	BonusesCount float64 `json:"accural,omitempty"`
 	Status       string  `json:"status"`
 	CreatedAt    string  `json:"uploaded_at"`
